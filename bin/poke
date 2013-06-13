@@ -1,0 +1,70 @@
+#!/usr/bin/env ruby
+
+require 'webpoke'
+require 'optparse'
+
+options = {}
+
+OptionParser.new do|opts|
+  opts.banner = "Usage: poke [options] file_with_tests"
+  opts.on( '-h', '--help', 'Display this screen' ) do
+    puts opts
+    exit
+  end
+  
+  options[:bootstrap] = false
+  opts.on( '-b file', '--bootstrap file', "Bootstrap file" ) do |file|
+    options[:bootstrap] = File.expand_path file
+  end
+  
+  options[:group] = []
+  opts.on( '-g group', '--group groups', Array, "Only run tests in group" ) do |group|
+    options[:group] = group
+  end
+  
+  options[:quiet] = false
+  opts.on('-q', '--quiet', 'Run tests and exit with status code') do |quiet|
+    options[:quiet] = true
+  end
+  
+  options[:doc] = false
+  opts.on('-d <file>', '--document <document>', "Generate documentation for test instead of running") do |file|
+    options[:doc] = File.expand_path file
+  end
+  
+  options[:format] = false
+  formats = Webpoke.formats
+  opts.on("-f [#{formats.join('|')}]", "--format [#{formats.join('|')}]" "Set the format to a desired output\n") do |format|
+    
+    if !formats.include?(format)
+      puts "<#{format}> is not a recognized format, try [#{formats.join(', ')}]"
+      exit
+    end
+    
+  end
+  
+end.parse!
+
+if options[:bootstrap]
+  require options[:bootstrap]
+end
+
+file = ARGV[0]
+
+if (File.directory?(file))
+  Dir.glob(File.expand_path(file)+'/*.rb').each do |f|
+    require File.expand_path(f)
+  end
+elsif (File.file?(file))
+  require File.expand_path(file)
+end
+
+if options[:doc]
+  File.open(options[:doc], 'r+') do |f|
+    Webpoke.document(options[:group])
+  end
+end
+
+Webpoke.run(options[:group])
+
+puts "\nTests: #{Webpoke.tested}, success: #{Webpoke.success}, errors: #{Webpoke.failed}";
