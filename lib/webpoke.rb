@@ -45,13 +45,8 @@ module Webpoke
   $log = ""
   $config = nil
   
-  
-=begin rdoc
-  Add a test to the queue
-  
-==== Arguments
-  * +block+ The block for configurating this test
-=end
+  # Adds a test to the queue
+  # @param block [Proc] the configuration for this test
   def test(&block)
     $tests << Test.new(&block)
   end
@@ -80,7 +75,9 @@ module Webpoke
     args
   end
   
-  
+  # Configures the poking
+  # @param &block [Block] the configuration options
+  # (see #Webpoke::Config)
   def config (&block)
     $config = Webpoke::Config.new(&block)
   end
@@ -146,11 +143,13 @@ module Webpoke
     data = []
     
     $tests.each do |test|
-      return if group && !test.group.include?(group)
+      return if group && !test.group == group
       
       data << test.describe
       
     end
+    
+    return data.to_json
     
   end
   

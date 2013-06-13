@@ -39,7 +39,7 @@ Returns the test description
 =begin rdoc
   Returns the test description definition (so that we can auto-generate documentation)
 =end  
-  def to_definition
+  def describe
     
     return {
       description: @description,
