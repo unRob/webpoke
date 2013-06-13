@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'Webpoke/version'
 
 Gem::Specification.new do |gem|
-  gem.name          = "Webpoke"
+  gem.name          = "webpoke"
   gem.version       = Webpoke::VERSION
   gem.authors       = ["Roberto Hidalgo"]
   gem.email         = ["un@rob.mx"]
