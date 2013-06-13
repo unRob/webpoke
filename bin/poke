@@ -29,7 +29,13 @@ optparser = OptionParser.new do |opts|
   
   options[:doc] = false
   opts.on('-d <file>', '--document <document>', "Generate documentation for test instead of running") do |file|
-    options[:doc] = File.expand_path file
+    
+    if (file != 'stdout')
+      out = File.open(File.expand_path(file), 'w+')
+    else
+      out = $stdout
+    end
+    options[:doc] = out
   end
   
   options[:format] = false
@@ -66,9 +72,7 @@ elsif (File.file?(file))
 end
 
 if options[:doc]
-  File.open(options[:doc], 'w+') do |f|
-    f << Webpoke.document(options[:group])
-  end
+  options[:doc] << Webpoke.document(options[:group])
   exit 0
 end
 

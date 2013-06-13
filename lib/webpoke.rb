@@ -44,6 +44,7 @@ module Webpoke
   $tests = [];
   $log = ""
   $config = nil
+  $groups = {};
   
   # Adds a test to the queue
   # @param block [Proc] the configuration for this test
@@ -51,6 +52,14 @@ module Webpoke
     $tests << Test.new(&block)
   end
   
+    
+  def group (groupName, description: nil)
+    $groups[groupName] = {
+      name: groupName,
+      description: description,
+      tests: []
+    }
+  end
   
   def args_for_test(test)
       
@@ -142,18 +151,22 @@ module Webpoke
     $stdout << "\n" if newLine
   end
   
+  
   def Webpoke.document(group)
     
-    data = []
+    groups = {}
     
     $tests.each do |test|
       return if group && !test.group == group
       
-      data << test.describe
+      if (!groups.has_key? test.group)
+        groups[test.group] = $groups[test.group] || {tests:[], name: test.group}
+      end
       
+      groups[test.group][:tests] << test.describe
     end
     
-    return data.to_json
+    return JSON.pretty_generate groups.values
     
   end
   
