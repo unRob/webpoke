@@ -18,7 +18,7 @@ class Webpoke::Test
     if @should_fail
       return code > 399
     else
-      return [200..202].include?(code)
+      return (200..202).include?(code)
     end
   end
   
@@ -58,6 +58,8 @@ Returns the test description
     if !self.default_success(response, body)
       return false
     end
+    
+   
     
     if @success
       begin
