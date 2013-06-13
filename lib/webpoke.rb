@@ -64,7 +64,7 @@ module Webpoke
     
     if test.data
       if $config.parse[:input]
-        args[:body] = config.parse[:input].call(test.data)
+        args[:body] = $config.parse[:input].call(test.data)
       else
         args[:data] = test.data
       end
@@ -86,7 +86,7 @@ module Webpoke
   def run (group=nil)
     
     $tests.each do |test|
-      return if group && !test.group == group
+      next if group && test.group != group
       $tested +=1
       
       fqu = if test.url.match(/^https?:\/\//i) then url; else $config.base+test.url; end
@@ -105,9 +105,12 @@ module Webpoke
         $errors += 1;
         next;
       end
-            
+      
+      body = r.body
       begin
-        body = $config.parse[:ouput] ? $config.parse[:output].call(r.body) : r.body
+        if $config.parse[:output] && body.is_a?(String)
+          body = $config.parse[:output].call(r.body)
+        end
       rescue Exception => e
         log "Parsing failure: ".red
         log "\t#{e}"
@@ -116,6 +119,7 @@ module Webpoke
         $errors += 1;
         next;
       end
+      
       
       if test.passed?(r.code, body)
         $successes +=1

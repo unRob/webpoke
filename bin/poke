@@ -5,8 +5,6 @@ require 'optparse'
 
 options = {}
 
-file = ARGV[0]
-
 optparser = OptionParser.new do |opts|
   opts.banner = "Usage: poke [options] file_with_tests"
   opts.on( '-h', '--help', 'Display this screen' ) do
@@ -19,8 +17,8 @@ optparser = OptionParser.new do |opts|
     options[:bootstrap] = File.expand_path file
   end
   
-  options[:group] = []
-  opts.on( '-g group', '--group groups', Array, "Only run tests in group" ) do |group|
+  options[:group] = nil
+  opts.on( '-g group', '--group groups', "Only run tests in group" ) do |group|
     options[:group] = group
   end
   
@@ -45,7 +43,7 @@ optparser = OptionParser.new do |opts|
     
   end
   
-  if !file
+  if !ARGV[0]
     puts opts.help()
     exit 255
   end
@@ -56,6 +54,8 @@ if options[:bootstrap]
   require options[:bootstrap]
 end
 
+
+file = ARGV[0]
 
 if (File.directory?(file))
   Dir.glob(File.expand_path(file)+'/*.rb').each do |f|

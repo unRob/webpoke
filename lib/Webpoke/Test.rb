@@ -59,15 +59,15 @@ Returns the test description
       return false
     end
     
-   
     
     if @success
       begin
         result = @success.call(response, body)
       rescue Exception => e
         result = false
-        Webpoke.log "Error while executing success for test".red
+        Webpoke.log "\nError while executing success for test".red
         Webpoke.log e
+        Webpoke.log e.backtrace.join "\n"
       end
     else
       result = self.default_success(response, body)

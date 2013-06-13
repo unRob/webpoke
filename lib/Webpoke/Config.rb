@@ -40,8 +40,8 @@ class Webpoke::Config
       when String
         raise new Webpoke::ConfigError("I don't know how to parse [#{type}] responses yet :/") unless @@valid_parse_types.include? type
         @parse = {
-          input: lambda {|d| JSON.parse(d, symbolyze_names: true)},
-          output: lambda {|d| d.to_json }
+          output: lambda {|d| JSON.parse(d, symbolize_names: true)},
+          input: lambda {|d| d.to_json }
         }
       when Hash      
         @parse = type
