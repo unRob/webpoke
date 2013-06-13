@@ -36,15 +36,48 @@ Returns the test description
     @description
   end
   
+  
+  def pt(v)
+    v = v.class.to_s
+    case v
+    when 'Fixnum'
+      v = 'Int'
+    when 'Hash'
+      v = 'Object'
+    when 'TrueClass', 'FalseClass'
+      v = 'Boolean'
+    end
+    
+    v.downcase
+  end
+  
 =begin rdoc
   Returns the test description definition (so that we can auto-generate documentation)
 =end  
   def describe
     
+    query = []
+    if (@query)
+      @query.each do |k,v|
+        query << {key: k, v:self.pt(v)}
+      end
+    end
+    
+    data = []
+    if (@data)
+      @data.each do |k,v|
+        data << {key: k, v:self.pt(v)}
+      end
+    end
+    
     return {
       description: @description,
       url: @url,
-      method: @method
+      method: @method,
+      query: query,
+      headers: @headers,
+      data: data,
+      sampleOutput: @sampleOutput
     }
     
   end
