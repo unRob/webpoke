@@ -46,7 +46,7 @@ optparser = OptionParser.new do |opts|
       puts "<#{format}> is not a recognized format, try [#{formats.join(', ')}]"
       exit
     end
-    
+    options[:format] = format;
   end
   
   if !ARGV[0]
@@ -71,11 +71,15 @@ elsif (File.file?(file))
   require File.expand_path(file)
 end
 
-if options[:doc]
-  options[:doc] << Webpoke.document(options[:group])
-  exit 0
+begin
+  if options[:doc]
+    options[:doc] << Webpoke.document(options[:group])
+    exit 0
+  end
+
+  Webpoke.run(options[:group])
+  puts Webpoke.results()
+rescue Interrupt => e
+  puts Webpoke.results()
+  exit!
 end
-
-Webpoke.run(options[:group])
-
-puts "\nTests: #{Webpoke.tested}, success: #{Webpoke.success}, errors: #{Webpoke.failed}";

@@ -3,16 +3,36 @@
 =end
 class Webpoke::Test
   
-  mark_accessible :description, :group, :url, :method, :success, :query, :should_fail, :headers, :data
+  mark_accessible :description, :group, :url, :method, :success, :query, :should_fail, :headers, :data, :body, :on_success, :dependant, :depends_on, :response, :parse
   
   def initialize(&block)
+    @parse = true
+    @on_success = [];
     instance_eval(&block);
     @group = @group || ''
     @method = @method || 'get'
     @headers = @headers || {}
+    @on_success = [];
+  end
+  
+  def should_parse?
+    return @parse
+  end
+  
+  def on (response, &block)
+    
+    if (response == 'success')
+      @on_success << block
+    else
+      @on_error << block
+    end
     
   end
   
+  def depends_on otherTest
+    otherTest.on_success << self
+    self.dependant = true;
+  end
   
   def default_success (code, body)
     if @should_fail
@@ -21,7 +41,6 @@ class Webpoke::Test
       return (200..202).include?(code)
     end
   end
-  
   
   def success (&block)
     @success = block
@@ -83,11 +102,20 @@ Returns the test description
   end
   
   
+  def dependant?
+    @dependant
+  end
+  
+  
 =begin rdoc
   Run the test
 =end
   def passed? (response, body)
     
+    @response = {
+      body: body,
+      code: response
+    }
     if !self.default_success(response, body)
       return false
     end
@@ -98,9 +126,7 @@ Returns the test description
         result = @success.call(response, body)
       rescue Exception => e
         result = false
-        Webpoke.log "\nError while executing success for test".red
-        Webpoke.log e
-        Webpoke.log e.backtrace.join "\n"
+        raise Webpoke::TestSuccessError.new(e.message, e)
       end
     else
       result = self.default_success(response, body)
@@ -113,4 +139,15 @@ Returns the test description
 end
 
 class Webpoke::TestError < StandardError
+  attr_accessor :object
+  def initialize(message=nil, object=nil)
+    super(message)
+    self.object = object
+  end
+end
+class Webpoke::TestSuccessError < Webpoke::TestError
+end
+class Webpoke::TestHTTPError < Webpoke::TestError
+end
+class Webpoke::TestParseError < Webpoke::TestError
 end

@@ -49,7 +49,9 @@ module Webpoke
   # Adds a test to the queue
   # @param block [Proc] the configuration for this test
   def test(&block)
-    $tests << Test.new(&block)
+    test = Test.new(&block)
+    $tests << test
+    return test
   end
   
     
@@ -79,6 +81,10 @@ module Webpoke
       end
     end
     
+    if test.body
+      args[:body] = test.body
+    end
+    
     args[:query] = test.query if test.query
     
     args
@@ -91,55 +97,90 @@ module Webpoke
     $config = Webpoke::Config.new(&block)
   end
 
+  def run_test(test)
+    
+    $tested +=1
+    fqu = if test.url.match(/^https?:\/\//i) then test.url; else $config.base+test.url; end
+    args = args_for_test(test)
+    
+    log "#{$tested}: #{test.description}".bold
+    log "#{test.method.upcase}: #{test.url}...", false
+    $config.beforeSend(test.method, fqu, args) if $config.beforeSend
+    
+    begin
+      r = HTTParty.send(test.method, fqu, args)
+    rescue Interrupt
+      puts Webpoke.results
+      exit!
+    rescue Exception => e
+      raise Webpoke::TestHTTPError.new(e.message, e)
+    end
+    
+    body = r.body
+    begin
+      if test.should_parse? && $config.parse[:output] && body.is_a?(String)
+        body = $config.parse[:output].call(r.body)
+      end
+    rescue Exception => e
+      raise Webpoke::TestParseError.new(e.message, body)
+    end
+    
+    
+    if test.passed?(r.code, body)
+      true
+    else
+      if $config.on_failure
+        log $config.on_failure.call(r.code, body)
+      end
+      false
+    end
+    
+  end
+  
+  def gauge_success(test)
+    begin
+      success = run_test test
+    rescue Webpoke::TestHTTPError => e
+      log 'FAIL:'.red
+      log e
+      $errors += 1;
+    rescue Webpoke::TestParseError => e
+      log "Parsing failure: ".red
+      log "\t#{e}"
+      log "Data:"
+      log "\t"+e.object
+      $errors += 1;
+    rescue Webpoke::TestSuccessError => e
+      log "\nError while executing success for test".red
+      log e
+      log e.backtrace.join "\n"
+    end
+    
+    if (success)
+      $successes +=1
+      log "OK!".green
+      test.on_success.each do |dependent|
+        dt = dependent.call()
+        gauge_success dt
+      end
+    else
+      $errors += 1
+      log "FAIL!".red
+    end
+    return success
+    
+  end
+  
   
   def run (group=nil)
     
     $tests.each do |test|
       next if group && test.group != group
-      $tested +=1
       
-      fqu = if test.url.match(/^https?:\/\//i) then url; else $config.base+test.url; end
+      next if test.dependant?
       
-      args = args_for_test(test)
+      gauge_success(test)
       
-      $config.beforeSend(test.method, fqu, args) if $config.beforeSend
-      
-      log "#{$tested}: #{test.description}".bold
-      log "#{test.method.upcase}: #{test.url}...", false
-      begin
-        r = HTTParty.send(test.method, fqu, args)
-      rescue Exception => e
-        log 'FAIL:'.red
-        log e
-        $errors += 1;
-        next;
-      end
-      
-      body = r.body
-      begin
-        if $config.parse[:output] && body.is_a?(String)
-          body = $config.parse[:output].call(r.body)
-        end
-      rescue Exception => e
-        log "Parsing failure: ".red
-        log "\t#{e}"
-        log "Data:"
-        log "\t"+r.body
-        $errors += 1;
-        next;
-      end
-      
-      
-      if test.passed?(r.code, body)
-        $successes +=1
-        log "OK!".green
-      else
-        log "FAIL!".red
-                
-        if $config.on_failure
-          log $config.on_failure.call(r.code, body)
-        end
-      end
     end
       
   end
@@ -167,6 +208,27 @@ module Webpoke
     end
     
     return JSON.pretty_generate groups.values
+    
+  end
+  
+  
+  def Webpoke.results()
+    
+    if $config.format == 'stdout'
+      puts "\nTests: #{Webpoke.tested}, success: #{Webpoke.success}, errors: #{Webpoke.failed}";
+    else
+      puts JSON.pretty_generate({
+        tests: Webpoke.tested,
+        success: Webpoke.success,
+        errors: Webpoke.failed
+        })
+    end
+    
+    if (Webpoke.failed > 0)
+      exit 1;
+    else
+      exit 0;
+    end
     
   end
   
