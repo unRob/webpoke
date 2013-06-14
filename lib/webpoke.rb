@@ -207,7 +207,6 @@ module Webpoke
       
       groups[test.group][:tests] << test.describe
       
-      puts test.on_success
       test.on_success.each do |dp|
         dp.call()
       end
