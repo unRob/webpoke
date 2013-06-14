@@ -178,6 +178,7 @@ module Webpoke
       next if group && test.group != group
       
       next if test.dependant?
+      next if test.did_run?
       
       gauge_success(test)
       
@@ -205,6 +206,12 @@ module Webpoke
       end
       
       groups[test.group][:tests] << test.describe
+      
+      puts test.on_success
+      test.on_success.each do |dp|
+        dp.call()
+      end
+      
     end
     
     return JSON.pretty_generate groups.values

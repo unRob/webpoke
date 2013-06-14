@@ -13,10 +13,15 @@ class Webpoke::Test
     @method = @method || 'get'
     @headers = @headers || {}
     @on_success = [];
+    @ran = false;
   end
   
   def should_parse?
     return @parse
+  end
+  
+  def did_run?
+    @ran
   end
   
   def on (response, &block)
@@ -111,7 +116,7 @@ Returns the test description
   Run the test
 =end
   def passed? (response, body)
-    
+    @ran = true
     @response = {
       body: body,
       code: response
