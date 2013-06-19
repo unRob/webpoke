@@ -1,6 +1,13 @@
 #Webpoke
 
-I'm too lazy to document right now...
+    Usage: poke [options] [testfile | path/to/test_files]
+    -h, --help                       Display this screen
+    -b, --bootstrap file             Bootstrap file
+    -g, --group groups               Only run tests in group
+    -q, --quiet                      Run tests and exit with status code
+    -d, --document <document>        Generate documentation for test instead of running
+    -f, --format [json|html|stdout]  Set the format to a desired output
+        --leeroy                     WARNING: Only use if you know your tests are going to make something explode
 
 ##Installation
 
