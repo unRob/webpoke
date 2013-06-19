@@ -49,6 +49,28 @@ optparser = OptionParser.new do |opts|
     options[:format] = format;
   end
   
+  opts.on("--leeroy", "WARNING: Only use if you know your tests are going to make something explode") do
+    def string_in_seconds(string, secs)
+      secs = secs.to_f
+      letters = string.split('')
+      wait_time = secs/letters.count
+      letters.each do |l|
+        $stdout << l
+        sleep wait_time
+      end
+    end
+
+    string_in_seconds("All right, time's up!\nLet's do this...", 1.5)
+    sleep 1
+    puts ''
+    string_in_seconds('LEEEEEEEEEEROOOOOOOOOOOOOOOY',3)
+    sleep 0.5
+    puts ''
+    string_in_seconds('JEEEEEEEEEEEEEEEEENNNNNNNNKINNNNNNNNNNNNSSSSSSSSAH', 5)
+    puts ''
+    string_in_seconds('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', 2)
+  end
+  
   if !ARGV[0]
     puts opts.help()
     exit 255

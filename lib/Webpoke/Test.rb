@@ -3,7 +3,7 @@
 =end
 class Webpoke::Test
   
-  mark_accessible :description, :group, :url, :method, :success, :query, :should_fail, :headers, :data, :body, :on_success, :dependant, :depends_on, :response, :parse
+  mark_accessible :description, :group, :url, :method, :success, :query, :should_fail, :headers, :data, :body, :on_success, :dependant, :depends_on, :response, :parse, :metadata, :run_always
   
   def initialize(&block)
     @parse = true
@@ -43,7 +43,7 @@ class Webpoke::Test
     if @should_fail
       return code > 399
     else
-      return (200..202).include?(code)
+      return (200..226).include?(code)
     end
   end
   
@@ -101,7 +101,8 @@ Returns the test description
       query: query,
       headers: @headers,
       data: data,
-      sampleOutput: @sampleOutput
+      sampleOutput: @sampleOutput,
+      metadata: @metadata
     }
     
   end

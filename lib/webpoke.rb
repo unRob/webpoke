@@ -175,7 +175,7 @@ module Webpoke
   def run (group=nil)
     
     $tests.each do |test|
-      next if group && test.group != group
+      next if group && test.group != group && !test.run_always
       
       next if test.dependant?
       next if test.did_run?
