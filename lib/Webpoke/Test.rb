@@ -62,17 +62,21 @@ Returns the test description
   
   
   def pt(v)
-    v = v.class.to_s
-    case v
+    clase = v.class.to_s
+    case clase
     when 'Fixnum'
-      v = 'Int'
+      clase = 'Int'
     when 'Hash'
-      v = 'Object'
+      v.each do |k,nv|
+        v[k] = self.pt(nv)
+      end
+      return v
+      
     when 'TrueClass', 'FalseClass'
-      v = 'Boolean'
+      clase = 'Boolean'
     end
     
-    v.downcase
+    clase.downcase
   end
   
 =begin rdoc
