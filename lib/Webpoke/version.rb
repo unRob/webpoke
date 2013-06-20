@@ -1,3 +1,3 @@
 module Webpoke
-  VERSION = "0.0.49"
+  VERSION = "0.5.0"
 end

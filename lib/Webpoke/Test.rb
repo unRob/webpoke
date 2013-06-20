@@ -3,7 +3,7 @@
 =end
 class Webpoke::Test
   
-  mark_accessible :description, :group, :url, :method, :success, :query, :should_fail, :headers, :data, :body, :on_success, :dependant, :depends_on, :response, :parse, :metadata, :run_always
+  mark_accessible :description, :group, :url, :method, :success, :query, :should_fail, :headers, :data, :body, :on_success, :dependant, :depends_on, :response, :parse, :metadata, :run_always, :sampleOutput
   
   def initialize(&block)
     @parse = true
